@@ -1,8 +1,9 @@
+import './scss/styles.scss';
+import { apiProducts } from './utils/data';
 import { Catalog } from './components/Models/Catalog';
 import { Cart } from './components/Models/Cart';
 import { Customer } from './components/Models/Customer';
 import { CatalogBase } from './components/base/CatalogBase';
-import { API_URL } from './utils/constants';
 import type { Product } from './types';
 
 const products: Product[] = apiProducts.items;

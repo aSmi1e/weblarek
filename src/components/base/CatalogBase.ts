@@ -2,7 +2,7 @@ import { Api } from "./Api";
 import { ApiPostMethods, ICatalogBase } from "../../types";
 import { API_URL } from "../../utils/constants";
 
-export class CatalogLoader implements ICatalogBase {
+export class CatalogBase implements ICatalogBase {
     _api: Api;
     _fetchUrl: string;
     _sendUrl: string;

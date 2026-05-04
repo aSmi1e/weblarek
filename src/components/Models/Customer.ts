@@ -1,4 +1,4 @@
-import { ValidationType } from "../../types";
+import { ResultValidationType } from "../../types";
 import { ICustomer } from "../../types";
 
 export class Customer implements ICustomer {
@@ -47,8 +47,8 @@ export class Customer implements ICustomer {
         address: string,
         phone: string,
         email: string,
-    }): ValidationType {
-        const res: ValidationType = {};
+    }): ResultValidationType {
+        const res: ResultValidationType = {};
         if (dataForValidation.paymentType == "") {
             res['paymentType'] = "Укажите тип оплаты";
         }

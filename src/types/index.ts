@@ -12,7 +12,7 @@ export interface ICatalogBase {
     sendData<T extends object>(data: object, method?: ApiPostMethods): Promise<T>
 }
 
-export type ValidationType = {
+export type ResultValidationType = {
     paymentType?: string,
     address?: string,
     phone?: string,
@@ -69,10 +69,5 @@ export interface ICustomer {
         address: string,
         phone: string,
         email: string,
-    }): {
-        paymentType?: string,
-        address?: string,
-        phone?: string,
-        email?: string,
-    }
+    }): ResultValidationType
 }
