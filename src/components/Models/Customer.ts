@@ -1,20 +1,23 @@
-import { Product } from "../../types";
+import { ValidationType } from "../../types";
 import { ICustomer } from "../../types";
 
-class Customer implements ICustomer {
+export class Customer implements ICustomer {
 
     _paymentType: string | null = null;
     _address: string | null = null;
     _phone: string | null = null;
     _email: string | null = null;
 
-    public updateData<K extends keyof this>(key: K, value: this[K]): void {
+    public updateData<K extends keyof this>(key: K, value: this[K]): boolean {
         try {
             if (key in this) {
                 this[key] = value;
+                return true
             }
+            return false
         } catch (error) {
             console.error(`Ошибка при обновлении данных покупателя: ${error}`);
+            return false
         }
     }
 
@@ -44,17 +47,21 @@ class Customer implements ICustomer {
         address: string,
         phone: string,
         email: string,
-    }): {
-        paymentType?: string,
-        address?: string,
-        phone?: string,
-        email?: string,
-    } {
-        return {
-            paymentType: "",
-            address: "",
-            phone: "",
-            email: "",
+    }): ValidationType {
+        const res: ValidationType = {};
+        if (dataForValidation.paymentType == "") {
+            res['paymentType'] = "Укажите тип оплаты";
         }
+        if (dataForValidation.address == "") {
+            res['address'] = "Укажите адрес";
+        }
+        if (dataForValidation.phone == "") {
+            res['phone'] = "Укажите номер телефона";
+        }
+        if (dataForValidation.email == "") {
+            res['email'] = "Укажите электронную почту";
+        }
+
+        return res;
     }
 }

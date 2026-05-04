@@ -5,10 +5,18 @@ export interface IApi {
     post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T>;
 }
 
-export interface ICatalogLoader {
+export interface ICatalogBase {
     _api: IApi,
-    sendData: void,
-    fetchData: void
+
+    fetchData<T extends object>(): Promise<T>,
+    sendData<T extends object>(data: object, method?: ApiPostMethods): Promise<T>
+}
+
+export type ValidationType = {
+    paymentType?: string,
+    address?: string,
+    phone?: string,
+    email?: string,
 }
 
 export type Product = {
@@ -48,7 +56,7 @@ export interface ICustomer {
     _phone: string | null,
     _email: string | null,
 
-    updateData<K extends keyof this>(key: K, value: this[K]): void,
+    updateData<K extends keyof this>(key: K, value: this[K]): boolean,
     getData(): {
         paymentType: string | null,
         address: string | null,

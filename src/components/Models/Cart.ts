@@ -2,7 +2,7 @@ import { ICart } from "../../types";
 import { Product } from "../../types";
 
 
-class Cart implements ICart {
+export class Cart implements ICart {
     _selectedProducts: Product[] = [];
 
     public getSelectedProducts(): Product[] {
