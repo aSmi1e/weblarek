@@ -3,100 +3,97 @@ import { apiProducts } from './utils/data';
 import { Catalog } from './components/Models/Catalog';
 import { Cart } from './components/Models/Cart';
 import { Customer } from './components/Models/Customer';
-import { CatalogBase } from './components/base/CatalogBase';
-import type { Product } from './types';
+import { CatalogLoader } from './components/Services/CatalogLoader';
+import { Api } from './components/base/Api';
+import { API_URL } from './utils/constants';
+import type { OrderRequest, Product, ProductListResponse } from './types';
 
 const products: Product[] = apiProducts.items;
 const firstProduct = products[0];
-const secondProduct = products[1];
+const secondProduct = products[1] ?? products[0];
 
-const Testing = async () => {
-try {
-    // Cart
-    console.log('Cart тестирование');
-    const cart = new Cart();
-    console.log('Метод getSelectedProducts (должно быть пусто):', cart.getSelectedProducts());
-    cart.addProduct(firstProduct);
-    console.log('Метод getSelectedProducts (после добавления одного продукта):', cart.getSelectedProducts());
-    cart.addProduct(secondProduct);
-    console.log('Метод getSelectedProducts (после добавления двух продуктов):', cart.getSelectedProducts());
-    console.log('Метод checkProductInCart(first):', cart.checkProductInCart(firstProduct.id));
-    console.log('Метод calculateTotalProductAmount:', cart.calculateTotalProductAmount());
-    console.log('Метод calculateTotalPrice:', cart.calculateTotalPrice());
-    console.log('Метод deleteProduct (ожидаем true):', cart.deleteProduct(firstProduct));
-    console.log('Метод deleteProduct (ожидаем false):', cart.deleteProduct(firstProduct));
-    console.log('Метод getSelectedProducts (ожидаем один продукт):', cart.getSelectedProducts());
-    cart.clearCart();
-    console.log('Метода clearCart. Проверка очистилась ли корзина:', cart.getSelectedProducts());
-    console.log('Метод checkProductInCart (после очистки ожидается null):', cart.checkProductInCart(firstProduct?.id));
-
-    // Catalog
-    console.log('Catalog тест');
-    const catalog = new Catalog();
-    console.log('Метод saveProducts:', catalog.saveProducts(products));
-    console.log('Метод getProducts:', catalog.getProducts());
-    console.log('Метод getProductById (проверка существующего ID):', firstProduct?.id, catalog.getProductById(firstProduct?.id ?? ''));
-    console.log('Метод getProductById (проверка рандомного ID):', catalog.getProductById('123456789'));
-    console.log('Метод saveProductById - сохраняем по ID (ничего не возвращает)', catalog.saveProductById(firstProduct?.id ?? ''));
-    console.log('Метод saveProductById - сохранился ли ID в атрибуте после вызова метода', catalog._selectedProductId);
-
-    // Customer
-    console.log('Customer тест');
-    const customer = new Customer();
-    console.log('Метод getData (пустые значения):', customer.getData());
-    console.log('updateData, в случае успеха возвращает true:', customer.updateData('_paymentType', 'card'));
-    console.log('updateData, в случае успеха возвращает true:', customer.updateData('_address', 'Test address'));
-    console.log('updateData, в случае успеха возвращает true:', customer.updateData('_phone', '+7999999999'));
-    console.log('updateData, в случае успеха возвращает true:', customer.updateData('_email', 'test@example.com'));
-    console.log('Метод getData (после обновления атрибутов):', customer.getData());
-    console.log('validateData (валидные данные):', customer.validateData({
-        paymentType: 'card',
-        address: 'Test address',
-        phone: '+7999999999',
-        email: 'test@example.com',
-    }));
-    console.log('validateData (пустые значения):', customer.validateData({
-        paymentType: '',
-        address: '',
-        phone: '',
-        email: '',
-    }));
-    console.log('validateData (не указан номер телефона):', customer.validateData({
-        paymentType: 'card',
-        address: 'Test address',
-        phone: '',
-        email: 'test@example.com',
-    }));
-    console.log('Метод clearData (ничего не возвращает):', customer.clearData());
-    console.log('Метод getData (после вызова clearData):', customer.getData());
-
-// CatalogBase
-    console.log('CatalogBase тест');
-    const loader = new CatalogBase();
+const methodTest = async () => {
     try {
-        const res = await loader.fetchData<{ total: number; items: Product[] }>();
-        console.log('Метод fetchData:', res);
-    } catch (error) {
-        console.log('fetchData с ошибкой:', error);
-    }
+        // Cart
+        console.log('Тестирование Cart');
+        const cart = new Cart();
+        console.log('Метод getSelectedProducts (ожидается пусто):', cart.getSelectedProducts());
+        cart.addProduct(firstProduct);
+        console.log('Метод getSelectedProducts (при добавлении одного продукта):', cart.getSelectedProducts());
+        cart.addProduct(secondProduct);
+        console.log('Метод getSelectedProducts (при добавлении двух продуктов):', cart.getSelectedProducts());
 
-    const orderData = {
-        payment: 'card',
-        email: 'aSmi1e@example.com',
-        phone: '+79635728100',
-        address: 'Biysk, Sovetskaya',
-        total: (firstProduct.price ?? 0) + (secondProduct.price ?? 0),
-        items: [firstProduct.id, secondProduct.id],
-    };
+        console.log('Метод checkProductInCart (ожидается true):', cart.checkProductInCart(firstProduct.id));
+        console.log('Метод calculateTotalProductAmount (подсчет итогового количества):', cart.calculateTotalProductAmount());
+        console.log('Метод calculateTotalPrice (подсчет итоговой цены):', cart.calculateTotalPrice());
 
-    try {
-        const res = await loader.sendData<object>(orderData);
-        console.log('Метод sendData:', res);
+        console.log('Метод deleteProduct (удаление настоящего, ожидается true):', cart.deleteProduct(firstProduct));
+        console.log('Метод deleteProduct (удаление удалённого продукта, ожидается false):', cart.deleteProduct(firstProduct));
+        console.log('Метод getSelectedProducts (ожидается меньшее количество продуктов):', cart.getSelectedProducts());
+
+        console.log('Метод clearCart (ничего не ожидается):', cart.clearCart());
+        console.log('Метод на проверку очищенной корзины:', cart.getSelectedProducts());
+        console.log('Метод checkProductInCart (после очистки корзины ожидается false):', cart.checkProductInCart(firstProduct?.id));
+
+        // Catalog
+        console.log('Тестирование Catalog');
+        const catalog = new Catalog();
+        console.log('Метод saveProducts (ничего не возвращает):', catalog.saveProducts(products));
+        console.log('Метод getProducts:', catalog.getProducts());
+        console.log('Метод getProductById (тест существующего ID):', firstProduct?.id, catalog.getProductById(firstProduct?.id ?? ''));
+        console.log('Метод getProductById (тест выдуманного ID):', catalog.getProductById('111111111'));
+        console.log('Метод saveProductById (ничего не возвращается)', catalog.saveProductById(firstProduct?.id ?? ''));
+        console.log('Метод saveProductById (сохраняется ли ID после вызова):', catalog.getSelectedProductId());
+
+        // Customer
+        console.log('Тест Customer');
+        const customer = new Customer();
+        console.log('Метод getData (пустые значения по умолчанию):', customer.getData());
+        console.log('Метод updateData (true при успехе):', customer.updateData('payment', 'card'));
+        console.log('Метод updateData (true при успехе):', customer.updateData('address', 'Tested address'));
+        console.log('Метод updateData (true при успехе):', customer.updateData('phone', '+7999999999'));
+        console.log('Метод updateData (true при успехе):', customer.updateData('email', 'email@example.com'));
+        console.log('Метод getData (после обновления атрибутов):', customer.getData());
+        console.log('validateData (проверка валидных значений):', customer.validateData());
+        customer.clearData();
+        console.log('validateData (проверка пустых значений):', customer.validateData());
+        customer.updateData('payment', 'card');
+        customer.updateData('address', 'Tested address');
+        customer.updateData('phone', '');
+        customer.updateData('email', 'email@example.com');
+        console.log('Метод validateData (телефон не указан):', customer.validateData());
+        console.log('Метод clearData (ничего не возвращает):', customer.clearData());
+        console.log('Метод getData (после вызова clearData):', customer.getData());
+
+        // CatalogLoader
+        console.log('Тест CatalogLoader');
+        const api = new Api(API_URL);
+        const loader = new CatalogLoader(api);
+        try {
+            const res: ProductListResponse = await loader.fetchProductList();
+            console.log('Метод fetchProductList:', res);
+        } catch (error) {
+            console.log('fetchProductList с ошибкой:', error);
+        }
+
+        const orderData: OrderRequest = {
+            payment: 'card',
+            email: 'realemail@example.com',
+            phone: '+79635728144',
+            address: 'Biysk, Sovetskaya',
+            total: (firstProduct?.price ?? 0) + (secondProduct?.price ?? 0),
+            items: [firstProduct.id, secondProduct.id],
+        };
+
+        try {
+            const res = await loader.sendData(orderData);
+            console.log('Метод sendData:', res);
+        } catch (error) {
+            console.log('sendData с ошибкой:', error);
+        }
     } catch (error) {
-        console.log('sendData с ошибкой:', error);
+        console.log('Во время тестирования возникла ошибка: ', error)
     }
-} catch (error) {
-    console.log('Возникла ошибка при тестировании: ', error)
-}
 };
-Testing();
+
+methodTest();

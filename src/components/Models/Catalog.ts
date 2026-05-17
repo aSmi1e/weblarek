@@ -3,35 +3,26 @@ import { Product } from "../../types";
 
 
 export class Catalog implements ICatalog {
-    _productList: Product[] = [];
-    _selectedProductId: string | null = null;
+    private productList: Product[] = [];
+    private selectedProductId: string | null = null;
 
-    public saveProducts(products: Product[]): boolean {
-        try {
-            this._productList.push(...products);
-            console.log(this._productList);
-            return true;
-        } catch (error) {
-            console.log(`Ошибка при сохранении данных товаров: ${error}`);
-            return false;
-        }
+    saveProducts(products: Product[]): void {
+        this.productList = products;
     };
 
-    public getProducts(): Product[] {
-        return this._productList;
+    getProducts(): Product[] {
+        return this.productList;
     }
 
-    public getProductById(id: string): Product | null {
-        try {
-            const productFilteredList = this._productList.filter((product) => product.id == id);
-            return productFilteredList.length == 0 ? null : productFilteredList[0];
-        } catch (error) {
-            console.log(`Ошибка при получении продукта по ID: ${error}`);
-            return null;
-        }
+    getProductById(id: string): Product | null {
+        return this.productList.find((product) => product.id === id) ?? null;
     };
 
-    public saveProductById(id: string): void {
-        this._selectedProductId = id;
+    saveProductById(id: string): void {
+        this.selectedProductId = id;
+    };
+
+    getSelectedProductId(): string | null {
+        return this.selectedProductId;
     };
 }

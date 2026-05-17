@@ -81,7 +81,7 @@ Presenter - презентер содержит основную логику п
 `options: RequestInit` - объект с заголовками, которые будут использованы для запросов.
 
 Методы:  
-`get(uri: string): Promise<object>` - выполняет GET запрос на переданный в параметрах ендпоинт и возвращает промис с объектом, которым ответил сервер  
+`get(uri: string): Promise<object>` - выполняет GET запрос на переданный в параметрах эндпоинт и возвращает промис с объектом, которым ответил сервер  
 `post(uri: string, data: object, method: ApiPostMethods = 'POST'): Promise<object>` - принимает объект с данными, которые будут переданы в JSON в теле запроса, и отправляет эти данные на ендпоинт переданный как параметр при вызове метода. По умолчанию выполняется `POST` запрос, но метод запроса может быть переопределен заданием третьего параметра при вызове.  
 `handleResponse(response: Response): Promise<object>` - защищенный метод проверяющий ответ сервера на корректность и возвращающий объект с данными полученный от сервера или отклоненный промис, в случае некорректных данных.
 
@@ -100,71 +100,11 @@ Presenter - презентер содержит основную логику п
 
 ### Данные
 
-#### Интерфейс ICatalog
-Интерфейс для модели каталога товаров, содержащий базовые атрибуты и методы каталога товаров.
-
-Поля интерфейса:  
-`_productList: Product[]` - массив всех товаров каталога.  
-`_selectedProductId: string | null` - ID выбранного товара.
-
-Методы интерфейса:  
-`saveProducts(products: Product[]): boolean` - сохраняет список товаров.  
-`getProducts(): Product[]` - возвращает список всех товаров.  
-`getProductById(id: string): Product | null` - возвращает товар по `id` или `null`.  
-`saveProductById(id: string): void` - сохраняет ID выбранного товара.
-
-#### Интерфейс ICart
-Интерфейс для модели корзины, содержащий базовые атрибуты и методы корзины товаров.
-
-Поля интерфейса:  
-`_selectedProducts: Product[]` - массив товаров, добавленных в корзину.
-
-Методы интерфейса:  
-`getSelectedProducts(): Product[]` - возвращает товары в корзине.  
-`addProduct(product: Product): void` - добавляет товар в корзину.  
-`deleteProduct(product: Product): boolean` - удаляет товар из корзины, возвращает результат операции (true/false).  
-`clearCart(): void` - очищает корзину.  
-`calculateTotalPrice(): number` - возвращает общую стоимость товаров.  
-`calculateTotalProductAmount(): number` - возвращает количество товаров.  
-`checkProductInCart(id: string): number | null` - возвращает индекс товара в корзине или `null`.
-
-#### Интерфейс ICustomer
-Интерфейс для модели покупателя, содержащий базовые атрибуты и методы покупателя.
-
-Поля интерфейса:  
-`_paymentType: string | null` - способ оплаты.  
-`_address: string | null` - адрес.  
-`_phone: string | null` - телефон.  
-`_email: string | null` - email.
-
-Методы интерфейса:  
-`updateData<K extends keyof this>(key: K, value: this[K]): boolean` - обновляет поле по ключу и возвращает результат обновления (true/false).  
-`getData(): { paymentType: string | null; address: string | null; phone: string | null; email: string | null }` - возвращает объект с данными покупателя.  
-`clearData(): void` - очищает данные покупателя.  
-`validateData(object: { paymentType: string; address: string; phone: string; email: string }): ResultValidationType` - валидирует данные и возвращает объект ошибок.
-
-#### Класс Catalog
-Этот класс используется для хранения всех товаров в приложении и взаимодействия с ними.
-
-Конструктор класса не принимает параметров.
-
-Поля класса:  
-`_productList: Product[]` -  хранит массив всех товаров. Содержит объекты, соответствующие интерфейсу Product.
-`_selectedProductId: string | null` -  хранит ID выбранного товара.
-
-Методы класса:  
-`saveProducts(products: Product[]): boolean` - сохраняет полученный список товаров. Возвращает `true` в случае успеха, иначе `false`.  
-`getProducts(): Product[]` - возвращает список всех товаров.  
-`getProductById(id: string): Product | null` - возвращает товар по его `id` или `null`, если товар не найден.  
-`saveProductById(id: string): void` - сохраняет `id` выбранного товара.
-
 #### Класс Cart
-Этот класс используется для хранения выбранных пользователем товаров (корзины) и работы с ними.
-
-Конструктор класса не принимает параметров.
+Класс для хранения добавленных в корзину товаров.
 
 Поля класса:  
-`_selectedProducts: Product[]` - хранит массив товаров, добавленных в корзину.
+`private selectedProducts: Product[]` - хранит массив товаров, добавленных в корзину.
 
 Методы класса:  
 `getSelectedProducts(): Product[]` - возвращает текущий список товаров в корзине.  
@@ -173,48 +113,48 @@ Presenter - презентер содержит основную логику п
 `clearCart(): void` - очищает корзину.  
 `calculateTotalPrice(): number` - возвращает суммарную стоимость товаров в корзине.  
 `calculateTotalProductAmount(): number` - возвращает количество товаров в корзине.  
-`checkProductInCart(id: string): number | null` - проверяет наличие товара в корзине по `id` и возвращает его индекс или `null`, если товар не найден.
+`checkProductInCart(id: string): boolean` - проверяет наличие товара в корзине по `id` и возвращает `true/false`.
 
-#### Класс Customer
-Этот класс используется для хранения данных покупателя (контакты, адрес, способ оплаты) и работы с ними.
-
-Конструктор класса не принимает параметров.
+#### Класс Catalog
+Класс для хранения товаров в приложении.
 
 Поля класса:  
-`_paymentType: string | null` - хранит выбранный способ оплаты.  
-`_address: string | null` - хранит адрес доставки.  
-`_phone: string | null` - хранит телефон покупателя.  
-`_email: string | null` - хранит email покупателя.
+`private productList: Product[]` - хранит массив всех товаров. Содержит объекты, соответствующие типу `Product`.  
+`private selectedProductId: string | null` - хранит ID выбранного товара.
 
 Методы класса:  
-`updateData<K extends keyof this>(key: K, value: this[K]): boolean` - обновляет значение поля покупателя по ключу. Возвращает `true`, если поле было обновлено, иначе `false`.  
-`getData(): { paymentType: string | null; address: string | null; phone: string | null; email: string | null }` - возвращает объект с текущими данными покупателя.  
-`clearData(): void` - сбрасывает все данные покупателя в `null`.  
-`validateData(dataForValidation: { paymentType: string; address: string; phone: string; email: string }): ResultValidationType` - выполняет валидацию переданных данных и возвращает объект ошибок (`ResultValidationType`), где ключ — имя поля, значение — текст ошибки. Если ошибок нет — возвращается пустой объект.
+`saveProducts(products: Product[]): void` - сохраняет полученный список товаров.  
+`getProducts(): Product[]` - возвращает список всех товаров.  
+`getProductById(id: string): Product | null` - возвращает товар по его `id` или `null`, если товар не найден.  
+`saveProductById(id: string): void` - сохраняет `id` выбранного товара.  
+`getSelectedProductId(): string | null` - возвращает ID выбранного товара.
+
+#### Класс Customer
+Класс для хранения данных покупателя (телефон, адрес, способ оплаты).
+
+Поля класса:  
+`private payment: string | null` - выбранный способ оплаты.  
+`private address: string | null` - адрес доставки.  
+`private phone: string | null` - телефон покупателя.  
+`private email: string | null` - email покупателя.
+
+Методы класса:  
+`updateData(key: CustomerDataKey, value: CustomerData[CustomerDataKey]): boolean` - обновляет значение поля покупателя по ключу. Возвращает `true`, если поле было обновлено, иначе `false`.  
+`getData(): CustomerData` - возвращает объект с текущими данными покупателя.  
+`clearData(): void` - сбрасывает все данные покупателя в null.  
+`validateData(): ResultValidationType` - выполняется валидацию данных покупателя, которые хранятся в экземпляре класса (тип оплаты, адрес, телефон, электронная почта), и возвращает объект (`ResultValidationType`), где ключ — имя поля, значение — текст ошибки. Пустые или состоящие только из пробелов значения считаются ошибочными. Если ошибок нет — возвращается пустой объект.
 
 ### Слой коммуникации
 
-#### Интерфейс ICatalogBase
-Интерфейс для класса загрузчика каталога, описывающий методы получения данных с сервера и отправки данных на сервер.
-
-Поля интерфейса:  
-`_api: IApi` - объект для выполнения HTTP-запросов.
-
-Методы интерфейса:  
-`fetchData<T extends object>(): Promise<T>` - загружает данные (GET) и возвращает ответ сервера.  
-`sendData<T extends object>(data: object, method?: ApiPostMethods): Promise<T>` - отправляет данные (POST) и возвращает ответ сервера.
-
-#### Класс CatalogBase
-Этот класс используется для загрузки данных каталога и отправки данных заказа на сервер. Внутри создает экземпляр класса `Api`.
+#### Класс CatalogLoader
+Класс для загрузки данных каталога и отправки данных заказа на сервер. Для выполнения запросов использует соответствующий интерфейсу `IApi` объект, передаваемый в конструктор.
 
 Конструктор:  
-`constructor(fetchUrl: string = '/product/', sendUrl: string = '/order/')` - принимает эндпоинты для загрузки списка товаров и отправки заказа.
+`constructor(api: IApi)` - принимает объект `IApi` (экземпляр `Api` с `baseUrl` из `.env`).
 
 Поля класса:  
-`_api: Api` - экземпляр `Api` для выполнения запросов (`new Api(API_URL)`).  
-`_fetchUrl: string` - ендпоинт для загрузки товаров.  
-`_sendUrl: string` - ендпоинт для отправки заказа.
+`private api: IApi` - объект для выполнения запросов к серверу.
 
 Методы класса:  
-`fetchData<T extends object>(): Promise<T>` - выполняет GET запрос на эндпойнт и возвращает ответ сервера.  
-`sendData<T extends object>(data: object, method: ApiPostMethods = 'POST'): Promise<T>` - отправляет на сервер данные о покупателе и выбранных товарах и возвращает ответ сервера.
+`fetchProductList(): Promise<ProductListResponse>` - GET запрос на эндпоинт `/product/` и возвращает список товаров.  
+`sendData(data: OrderRequest, method: ApiPostMethods = 'POST'): Promise<OrderResponse>` - отправляет данные заказа на эндпоинт `/order/` и возвращает ответ сервера.

@@ -5,19 +5,7 @@ export interface IApi {
     post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T>;
 }
 
-export interface ICatalogBase {
-    _api: IApi,
-
-    fetchData<T extends object>(): Promise<T>,
-    sendData<T extends object>(data: object, method?: ApiPostMethods): Promise<T>
-}
-
-export type ResultValidationType = {
-    paymentType?: string,
-    address?: string,
-    phone?: string,
-    email?: string,
-}
+export type ResultValidationType = Partial<Record<keyof CustomerData, string>>;
 
 export type Product = {
     id: string;
@@ -28,46 +16,56 @@ export type Product = {
     price: number | null;
 }
 
-export interface ICatalog {
-    _productList: Product[],
-    _selectedProductId: string | null,
+export type ProductListResponse = {
+    total: number;
+    items: Product[];
+}
 
-    saveProducts(products: Product[]): boolean,
+export interface OrderRequest extends CustomerData {
+    total: number;
+    items: string[];
+}
+
+export type OrderResponse = {
+    id: string;
+    total: number;
+}
+
+export interface ICatalogLoader {
+    fetchProductList(): Promise<ProductListResponse>,
+    sendData(data: OrderRequest, method?: ApiPostMethods): Promise<OrderResponse>
+}
+
+export interface ICatalog {
+    saveProducts(products: Product[]): void,
     getProducts(): Product[],
     getProductById(id: string): Product | null,
-    saveProductById(id: string): void
+    saveProductById(id: string): void,
+    getSelectedProductId(): string | null
 }
 
 export interface ICart {
-    _selectedProducts: Product[],
-
     getSelectedProducts(): Product[],
     addProduct(product: Product): void,
     deleteProduct(product: Product): boolean,
     clearCart(): void,
     calculateTotalPrice(): number,
     calculateTotalProductAmount(): number,
-    checkProductInCart(id: string): number | null
+    checkProductInCart(id: string): boolean
 }
 
-export interface ICustomer {
-    _paymentType: string | null,
-    _address: string | null,
-    _phone: string | null,
-    _email: string | null,
+export type CustomerData = {
+    payment: string | null,
+    address: string | null,
+    phone: string | null,
+    email: string | null,
+}
 
-    updateData<K extends keyof this>(key: K, value: this[K]): boolean,
-    getData(): {
-        paymentType: string | null,
-        address: string | null,
-        phone: string | null,
-        email: string | null,
-    },
+export type CustomerDataKey = keyof CustomerData;
+
+export interface ICustomer {
+    updateData(key: CustomerDataKey, value: CustomerData[CustomerDataKey]): boolean,
+    getData(): CustomerData,
     clearData(): void,
-    validateData(object: {
-        paymentType: string,
-        address: string,
-        phone: string,
-        email: string,
-    }): ResultValidationType
+    validateData(): ResultValidationType
 }
