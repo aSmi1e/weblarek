@@ -40,9 +40,9 @@ const methodTest = async () => {
         const catalog = new Catalog();
         console.log('Метод saveProducts (ничего не возвращает):', catalog.saveProducts(products));
         console.log('Метод getProducts:', catalog.getProducts());
-        console.log('Метод getProductById (тест существующего ID):', firstProduct?.id, catalog.getProductById(firstProduct?.id ?? ''));
-        console.log('Метод getProductById (тест выдуманного ID):', catalog.getProductById('111111111'));
-        console.log('Метод saveProductById (ничего не возвращается)', catalog.saveProductById(firstProduct?.id ?? ''));
+        console.log('Метод getProductById (тест существующего ID):', firstProduct?.id, catalog.saveSelectedProductId(firstProduct?.id ?? ''));
+        console.log('Метод getProductById (тест выдуманного ID):', catalog.saveSelectedProductId('111111111'));
+        console.log('Метод saveProductById (ничего не возвращается)', catalog.saveSelectedProductId(firstProduct?.id ?? ''));
         console.log('Метод saveProductById (сохраняется ли ID после вызова):', catalog.getSelectedProductId());
 
         // Customer

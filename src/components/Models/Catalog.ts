@@ -1,7 +1,6 @@
 import { ICatalog } from "../../types";
 import { Product } from "../../types";
 
-
 export class Catalog implements ICatalog {
     private productList: Product[] = [];
     private selectedProductId: string | null = null;
@@ -18,7 +17,7 @@ export class Catalog implements ICatalog {
         return this.productList.find((product) => product.id === id) ?? null;
     };
 
-    saveProductById(id: string): void {
+    saveSelectedProductId(id: string): void {
         this.selectedProductId = id;
     };
 
