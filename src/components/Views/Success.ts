@@ -23,4 +23,9 @@ export class SuccessView extends Component<ISuccessView> {
     set total(value: number) {
         this.descriptionElement.textContent = `Списано ${value} синапсов`;
     }
+
+    render(data: ISuccessView): HTMLElement {
+        this.total = data.total;
+        return this.container;
+    }
 }

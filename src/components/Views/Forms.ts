@@ -52,22 +52,16 @@ export class OrderFormView extends FormView<IOrderFormView> {
         this.addressInput = ensureElement<HTMLInputElement>('input[name="address"]', this.container);
 
         this.buttonCard.addEventListener('click', () => {
-            this.setPayment('card');
+            this.events.emit('order:payment-change', { payment: 'card' });
         });
 
         this.buttonCash.addEventListener('click', () => {
-            this.setPayment('cash');
+            this.events.emit('order:payment-change', { payment: 'cash' });
         });
 
         this.addressInput.addEventListener('input', () => {
             this.events.emit('order:address-change', { address: this.addressInput.value });
         });
-    }
-
-    private setPayment(value: string) {
-        this.buttonCard.classList.toggle('button_alt-active', value === 'card');
-        this.buttonCash.classList.toggle('button_alt-active', value === 'cash');
-        this.events.emit('order:payment-change', { payment: value });
     }
 
     set payment(value: string | null) {
@@ -81,6 +75,14 @@ export class OrderFormView extends FormView<IOrderFormView> {
 
     protected onSubmit(): void {
         this.events.emit('order:submit', {});
+    }
+
+    render(data: IOrderFormView): HTMLElement {
+        this.valid = data.valid;
+        this.errors = data.errors;
+        this.payment = data.payment;
+        this.address = data.address;
+        return this.container;
     }
 }
 
@@ -117,5 +119,13 @@ export class ContactsFormView extends FormView<IContactsFormView> {
 
     protected onSubmit(): void {
         this.events.emit('contacts:submit', {});
+    }
+
+    render(data: IContactsFormView): HTMLElement {
+        this.valid = data.valid;
+        this.errors = data.errors;
+        this.email = data.email;
+        this.phone = data.phone;
+        return this.container;
     }
 }

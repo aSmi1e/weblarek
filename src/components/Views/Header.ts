@@ -1,9 +1,9 @@
-import { ensureAllElements, ensureElement } from "../../utils/utils";
+import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
 
 interface IHeader {
-    counter: Number;
+    counter: number; // Было: Number, исправлено: number
 }
 
 export class Header extends Component<IHeader> {
@@ -22,5 +22,10 @@ export class Header extends Component<IHeader> {
 
     set counter(value: number) {
         this.counterElement.textContent = String(value);
+    }
+
+    render(data: IHeader): HTMLElement {
+        this.counter = data.counter; // Теперь ошибки не будет
+        return this.container;
     }
 }

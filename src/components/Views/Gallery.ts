@@ -12,4 +12,9 @@ export class GalleryView extends Component<IGalleryView> {
     set items(value: HTMLElement[]) {
         this.container.replaceChildren(...value);
     }
+
+    render(data: IGalleryView): HTMLElement {
+        this.items = data.items;
+        return this.container;
+    }
 }

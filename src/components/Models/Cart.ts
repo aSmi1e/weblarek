@@ -1,24 +1,17 @@
 import { ICart, Product } from '../../types';
 import { IEvents } from '../base/Events';
 
-
 export class Cart implements ICart {
     private selectedProducts: Product[] = [];
 
-    constructor(private readonly events?: IEvents) {
-
-    }
+    constructor(private readonly events?: IEvents) {}
 
     getSelectedProducts(): Product[] {
         return this.selectedProducts;
     }
 
     private emitChange() {
-        this.events?.emit('cart:change', {
-            items: this.selectedProducts,
-            total: this.calculateTotalPrice(),
-            amount: this.calculateTotalProductAmount(),
-        });
+        this.events?.emit('cart:change');
     }
 
     addProduct(product: Product): void {

@@ -35,4 +35,11 @@ export class BasketView extends Component<IBasketView> {
     set empty(value: boolean) {
         this.submitButton.disabled = value;
     }
+
+    render(data: IBasketView): HTMLElement {
+        this.items = data.items;
+        this.total = data.total;
+        this.empty = data.empty;
+        return this.container;
+    }
 }

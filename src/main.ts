@@ -10,7 +10,7 @@ import { EventEmitter } from './components/base/Events';
 import { Header } from './components/Views/Header';
 import { GalleryView } from './components/Views/Gallery';
 import { Modal } from './components/Views/Modal';
-import { BasketView } from './components/Views/Basket';
+import { BasketView } from './components/Views/BasketView';
 import { OrderFormView, ContactsFormView } from './components/Views/Forms';
 import { SuccessView } from './components/Views/Success';
 import { CardBasket, CardCatalog, CardPreview } from './components/Views/Card';
@@ -18,13 +18,16 @@ import type { OrderRequest, Product, ProductListResponse } from './types';
 
 const events = new EventEmitter();
 
+// Модели
 const catalogModel = new Catalog(events);
 const cartModel = new Cart(events);
 const customerModel = new Customer(events);
 
+// Сервисы
 const api = new Api(API_URL);
 const loader = new CatalogLoader(api);
 
+// Представления
 const header = new Header(events, ensureElement<HTMLElement>('.header'));
 const gallery = new GalleryView(ensureElement<HTMLElement>('.gallery'));
 const modal = new Modal(events, ensureElement<HTMLElement>('#modal-container'));
@@ -33,71 +36,98 @@ const orderFormView = new OrderFormView(events, cloneTemplate<HTMLFormElement>('
 const contactsFormView = new ContactsFormView(events, cloneTemplate<HTMLFormElement>('#contacts'));
 const successView = new SuccessView(events, cloneTemplate<HTMLDivElement>('#success'));
 
+// Рендеринг каталога
 const renderCatalog = () => {
     const products = catalogModel.getProducts();
     const items = products.map((product) => {
         const card = new CardCatalog(
             events,
             cloneTemplate<HTMLButtonElement>('#card-catalog'),
+            {
+                onClick: () => {
+                    events.emit('card:select', { id: product.id });
+                }
+            }
         );
-        card.render({
-            id: product.id,
+
+        return card.render({
             title: product.title,
             price: product.price,
             category: product.category,
             image: product.image,
+            id: product.id,
         });
-        return card.render();
     });
     gallery.render({ items });
 };
 
+// Рендеринг корзины
 const renderBasket = () => {
     const itemsInCart = cartModel.getSelectedProducts();
     const basketItems = itemsInCart.map((product, index) => {
         const item = new CardBasket(
             events,
             cloneTemplate<HTMLLIElement>('#card-basket'),
+            {
+                onDelete: () => {
+                    events.emit('basket:item-remove', { id: product.id });
+                }
+            }
         );
-        item.render({
-            id: product.id,
+
+        return item.render({
             title: product.title,
             price: product.price,
             index: index + 1,
+            id: product.id,
         });
-        return item.render();
     });
 
-    basketView.render({
+    const basketElement = basketView.render({
         items: basketItems,
         total: cartModel.calculateTotalPrice(),
         empty: itemsInCart.length === 0,
     });
 
-    modal.open(basketView.render());
+    modal.open(basketElement);
 };
 
+// Рендеринг превью товара
 const renderPreview = (product: Product) => {
     const inCart = cartModel.checkProductInCart(product.id);
+
     const card = new CardPreview(
         events,
         cloneTemplate<HTMLDivElement>('#card-preview'),
+        {
+            onToggleCart: () => {
+                events.emit('card:toggle-cart', { id: product.id });
+            }
+        }
     );
-    card.render({
-        id: product.id,
+
+    const cardElement = card.render({
         title: product.title,
         price: product.price,
         category: product.category,
         image: product.image,
         description: product.description,
         inCart,
+        id: product.id,
     });
-    modal.open(card.render());
+
+    modal.open(cardElement);
 };
 
+// Обновление счетчика корзины
 const updateHeaderCounter = () => {
     header.render({ counter: cartModel.calculateTotalProductAmount() });
 };
+
+// Обработчики событий
+events.on('cart:change', () => {
+    updateHeaderCounter();
+});
 
 events.on<{ id: string }>('card:select', ({ id }) => {
     const product = catalogModel.getProductById(id);
@@ -108,15 +138,13 @@ events.on<{ id: string }>('card:select', ({ id }) => {
 
 events.on<{ id: string }>('card:toggle-cart', ({ id }) => {
     const product = catalogModel.getProductById(id);
-    if (!product) {
-        return;
-    }
+    if (!product) return;
+
     if (cartModel.checkProductInCart(id)) {
         cartModel.deleteProduct(product);
     } else {
         cartModel.addProduct(product);
     }
-    updateHeaderCounter();
     renderPreview(product);
 });
 
@@ -128,20 +156,19 @@ events.on<{ id: string }>('basket:item-remove', ({ id }) => {
     const product = catalogModel.getProductById(id);
     if (product) {
         cartModel.deleteProduct(product);
+        renderBasket();
     }
-    updateHeaderCounter();
-    renderBasket();
 });
 
 events.on('basket:order', () => {
     const data = customerModel.getData();
-    orderFormView.render({
+    const orderElement = orderFormView.render({
         valid: false,
         errors: '',
         payment: data.payment,
         address: data.address ?? '',
     });
-    modal.open(orderFormView.render());
+    modal.open(orderElement);
 });
 
 events.on<{ payment: string }>('order:payment-change', ({ payment }) => {
@@ -178,13 +205,13 @@ events.on('order:submit', () => {
         return;
     }
     const data = customerModel.getData();
-    contactsFormView.render({
+    const contactsElement = contactsFormView.render({
         valid: false,
         errors: '',
         email: data.email ?? '',
         phone: data.phone ?? '',
     });
-    modal.open(contactsFormView.render());
+    modal.open(contactsElement);
 });
 
 events.on<{ email: string }>('contacts:email-change', ({ email }) => {
@@ -233,10 +260,10 @@ events.on('contacts:submit', async () => {
 
     try {
         const response = await loader.sendData(order);
-        successView.render({ total: response.total });
-        modal.open(successView.render());
+        const successElement = successView.render({ total: response.total });
+        modal.open(successElement);
         cartModel.clearCart();
-        updateHeaderCounter();
+        customerModel.clearData();
     } catch (error) {
         console.error('Ошибка при отправке заказа', error);
     }
@@ -246,6 +273,7 @@ events.on('success:close', () => {
     modal.close();
 });
 
+// Запуск приложения
 const runApp = async () => {
     header.render({ counter: 0 });
     try {

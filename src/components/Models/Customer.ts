@@ -21,7 +21,7 @@ export class Customer implements ICustomer {
         value: CustomerData[CustomerDataKey]
     ): boolean {
         (this[key] as CustomerData[typeof key]) = value;
-
+        this.emitChange();
         return true;
     }
 

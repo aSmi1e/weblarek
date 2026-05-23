@@ -11,7 +11,6 @@ export class Catalog implements ICatalog {
 
     saveProducts(products: Product[]): void {
         this.productList = products;
-
         this.events?.emit('catalog:change', {
             products: this.productList,
         });
@@ -31,7 +30,6 @@ export class Catalog implements ICatalog {
             selectedProductId: this.selectedProductId,
         });
     }
-
 
     getSelectedProductId(): string | null {
         return this.selectedProductId;

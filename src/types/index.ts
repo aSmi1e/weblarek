@@ -54,7 +54,6 @@ export type OrderResponse = {
 
 export interface ICatalogLoader {
     fetchProductList(): Promise<ProductListResponse>;
-
     sendData(
         data: OrderRequest,
         method?: ApiPostMethods
