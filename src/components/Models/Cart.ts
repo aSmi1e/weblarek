@@ -1,26 +1,47 @@
-import { ICart } from "../../types";
-import { Product } from "../../types";
+import { ICart, Product } from '../../types';
+import { IEvents } from '../base/Events';
 
 
 export class Cart implements ICart {
     private selectedProducts: Product[] = [];
 
+    constructor(private readonly events?: IEvents) {
+
+    }
+
     getSelectedProducts(): Product[] {
         return this.selectedProducts;
     }
 
+    private emitChange() {
+        this.events?.emit('cart:change', {
+            items: this.selectedProducts,
+            total: this.calculateTotalPrice(),
+            amount: this.calculateTotalProductAmount(),
+        });
+    }
+
     addProduct(product: Product): void {
         this.selectedProducts.push(product);
+        this.emitChange();
     }
 
     deleteProduct(product: Product): boolean {
         const lengthBefore = this.selectedProducts.length;
         this.selectedProducts = this.selectedProducts.filter((item) => item.id !== product.id);
-        return this.selectedProducts.length < lengthBefore;
+        const changed = this.selectedProducts.length < lengthBefore;
+        if (changed) {
+            this.emitChange();
+        }
+        return changed;
     }
 
     clearCart(): void {
+        if (this.selectedProducts.length === 0) {
+            return;
+        }
         this.selectedProducts = [];
+        this.emitChange();
     }
 
     calculateTotalPrice(): number {

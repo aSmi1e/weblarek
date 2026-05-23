@@ -1,19 +1,20 @@
-import {
-    CustomerData,
-    CustomerDataKey,
-    ICustomer,
-    ResultValidationType
-} from "../../types";
+import {CustomerData, CustomerDataKey, ICustomer, ResultValidationType} from "../../types";
+import { IEvents } from '../base/Events';
 
 export class Customer implements ICustomer {
 
     private payment: CustomerData['payment'] = null;
-
     private address: CustomerData['address'] = '';
-
     private phone: CustomerData['phone'] = '';
-
     private email: CustomerData['email'] = '';
+
+    constructor(private readonly events?: IEvents) {}
+
+    private emitChange() {
+        this.events?.emit('customer:change', {
+            data: this.getData(),
+        });
+    }
 
     updateData(
         key: CustomerDataKey,
@@ -38,6 +39,7 @@ export class Customer implements ICustomer {
         this.address = '';
         this.phone = '';
         this.email = '';
+        this.emitChange();
     }
 
     validateData(): ResultValidationType {
@@ -46,19 +48,15 @@ export class Customer implements ICustomer {
         if (!this.payment) {
             res.payment = 'Укажите тип оплаты';
         }
-
         if (!this.address.trim()) {
             res.address = 'Укажите адрес';
         }
-
         if (!this.phone.trim()) {
             res.phone = 'Укажите телефон';
         }
-
         if (!this.email.trim()) {
             res.email = 'Укажите электронную почту';
         }
-
         return res;
     }
 }
