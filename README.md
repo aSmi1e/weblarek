@@ -100,6 +100,19 @@ Presenter - презентер содержит основную логику п
 
 ### Данные
 
+### Типы данных
+
+#### Product
+```typescript
+type Product = {
+    id: string;          // Уникальный идентификатор товара
+    description: string; // Описание товара
+    image: string;       // Путь к изображению
+    title: string;       // Название товара
+    category: string;    // Категория товара
+    price: number | null;// Цена (null означает "Бесценно")
+}
+
 #### Класс Cart
 Класс для хранения добавленных в корзину товаров.
 
@@ -126,7 +139,7 @@ Presenter - презентер содержит основную логику п
 `saveProducts(products: Product[]): void` - сохраняет полученный список товаров.  
 `getProducts(): Product[]` - возвращает список всех товаров.  
 `getProductById(id: string): Product | null` - возвращает товар по его `id` или `null`, если товар не найден.  
-`saveProductById(id: string): void` - сохраняет `id` выбранного товара.  
+`saveSelectedProductId(id: string): void` - сохраняет `id` выбранного товара.  
 `getSelectedProductId(): string | null` - возвращает ID выбранного товара.
 
 #### Класс Customer
@@ -158,3 +171,202 @@ Presenter - презентер содержит основную логику п
 Методы класса:  
 `fetchProductList(): Promise<ProductListResponse>` - GET запрос на эндпоинт `/product/` и возвращает список товаров.  
 `sendData(data: OrderRequest, method: ApiPostMethods = 'POST'): Promise<OrderResponse>` - отправляет данные заказа на эндпоинт `/order/` и возвращает ответ сервера.
+
+### Слой представления (View)
+
+#### Класс Header
+Представление шапки сайта, отображает логотип и кнопку корзины с текущим количеством товаров.
+
+Конструктор:  
+`constructor(events: IEvents, container: HTMLElement)` - принимает брокер событий и корневой DOM‑элемент шапки.
+
+Поля класса:  
+`protected counterElement: HTMLElement` - элемент для отображения количества товаров в корзине.  
+`protected basketButton: HTMLButtonElement` - кнопка открытия корзины.
+
+Сеттеры и события:  
+`set counter(value: number)` - обновляет текст счётчика корзины.  
+При клике по кнопке корзины эмитит событие `basket:open` через брокер событий.
+
+##### Абстрактный класс Card
+
+Конструктор:  
+`constructor(events: IEvents, container: HTMLElement)` - принимает брокер событий и корневой DOM‑элемент карточки.
+
+Поля класса:  
+`protected _id: string` - идентификатор товара, связанный с карточкой.
+
+Сеттеры и вспомогательные методы:  
+`set id(value: string)` - сохраняет идентификатор товара и устанавливает `data-id` на DOM‑элементе.    
+`protected formatPrice(value: number | null): string` - форматирует цену для отображения (`"Бесценно"` или `"<n> синапсов"`).  
+`protected resolveImage(src: string): string` - формирует полный путь к изображению на основе `CDN_URL`.
+
+##### Класс CardCatalog
+
+Представление карточки товара в каталоге (шаблон `#card-catalog`).
+
+Поля класса:  
+`protected imageElement: HTMLImageElement` - изображение товара.  
+`protected categoryElement: HTMLElement` - элемент категории.  
+`protected titleElement: HTMLElement` - заголовок карточки.  
+`protected priceElement: HTMLElement` - цена товара.
+
+Сеттеры:  
+`set title(value: string)` - устанавливает заголовок карточки.  
+`set price(value: number | null)` - устанавливает текст цены, используя `formatPrice`.  
+`set category(value: string)` - устанавливает текст категории и модификатор класса через `setCategory`.  
+`set image(value: string)` - устанавливает изображение и `alt`‑текст через `setImage`.
+
+События:  
+При клике по карточке эмитит событие `card:select` с идентификатором товара.
+
+##### Класс CardPreview
+
+Представление карточки товара в модальном превью.
+
+Поля класса:  
+`protected imageElement: HTMLImageElement` - изображение товара.  
+`protected categoryElement: HTMLElement` - элемент категории.  
+`protected titleElement: HTMLElement` - заголовок товара.  
+`protected descriptionElement: HTMLElement` - описание товара.  
+`protected priceElement: HTMLElement` - цена товара.  
+`protected buttonElement: HTMLButtonElement` - кнопка добавления/удаления из корзины.
+
+Сеттеры:  
+`set title(value: string)` - устанавливает заголовок.  
+`set description(value: string)` - устанавливает описание.  
+`set price(value: number | null)` - устанавливает текст цены.  
+`set category(value: string)` - устанавливает категорию и её оформление.  
+`set image(value: string)` - устанавливает изображение товара.  
+`set inCart(value: boolean)` - обновляет текст кнопки в зависимости от того, находится ли товар в корзине.
+
+События:  
+При клике по кнопке эмитит событие `card:toggle-cart` с идентификатором товара.
+
+##### Класс CardBasket
+
+Представление строки товара в корзине.
+
+Поля класса:  
+`protected indexElement: HTMLElement` - порядковый номер товара в списке.  
+`protected titleElement: HTMLElement` - название товара.  
+`protected priceElement: HTMLElement` - цена товара.  
+`protected deleteButton: HTMLButtonElement` - кнопка удаления товара из корзины.
+
+Сеттеры:  
+`set index(value: number)` - устанавливает порядковый номер позиции.  
+`set title(value: string)` - устанавливает название товара.  
+`set price(value: number | null)` - устанавливает текст цены.
+
+События:  
+При клике по кнопке удаления эмитит событие `basket:item-remove` с идентификатором товара.
+
+#### Класс BasketView
+
+Представление модального окна корзины.
+
+Конструктор:  
+`constructor(events: IEvents, container: HTMLElement)` - принимает брокер событий и DOM‑элемент корзины.
+
+Поля класса:  
+`protected listElement: HTMLElement` - список товаров в корзине.  
+`protected totalElement: HTMLElement` - элемент для отображения итоговой суммы.  
+`protected submitButton: HTMLButtonElement` - кнопка перехода к оформлению.
+
+Сеттеры:  
+`set items(value: HTMLElement[])` - заменяет содержимое списка корзины.  
+`set total(value: number)` - обновляет отображение итоговой суммы.  
+`set empty(value: boolean)` - включает/выключает кнопку оформления в зависимости от того, пуста ли корзина.
+
+События:  
+При клике по кнопке оформления эмитит событие `basket:order`.
+
+#### Класс Modal
+
+Представление модального окна.
+
+Конструктор:  
+`constructor(events: IEvents, container: HTMLElement)` - принимает брокер событий и корневой DOM‑элемент модалки.
+
+Поля класса:  
+`protected contentContainer: HTMLElement` - контейнер для содержимого модального окна.  
+`protected closeButton: HTMLButtonElement` - кнопка закрытия модалки.
+
+Сеттеры и методы:  
+`set content(value: HTMLElement | null)` - заменяет содержимое модального окна.  
+`open(content: HTMLElement)` - устанавливает содержимое, добавляет модификатор `modal_active` и эмитит событие `modal:open`.  
+`close()` - убирает модификатор `modal_active`, очищает содержимое и эмитит событие `modal:close`.
+
+
+##### Абстрактный класс FormView
+
+Конструктор:  
+`constructor(events: IEvents, container: HTMLFormElement)` - принимает брокер событий и DOM‑элемент формы.
+
+Поля класса:  
+`protected formElement: HTMLFormElement` - сама форма.  
+`protected submitButton: HTMLButtonElement` - кнопка отправки формы.  
+`protected errorsElement: HTMLElement` - контейнер для текстов ошибок.
+
+Сеттеры:  
+`set valid(value: boolean)` - включает или выключает кнопку отправки (делает форму доступной/недоступной).  
+`set errors(value: string)` - обновляет текст ошибок под формой.
+
+Методы:  
+`protected abstract onSubmit(): void` - абстрактный метод, вызываемый при отправке формы. Конкретные формы реализуют его и генерируют соответствующие события через брокер.
+
+##### Класс OrderFormView
+
+Представление формы выбора способа оплаты и адреса доставки (шаблон `#order`).
+
+Поля класса:  
+`protected buttonCard: HTMLButtonElement` - кнопка выбора оплаты картой.  
+`protected buttonCash: HTMLButtonElement` - кнопка выбора оплаты наличными.  
+`protected addressInput: HTMLInputElement` - поле ввода адреса.
+
+Сеттеры:  
+`set payment(value: string | null)` - визуально отмечает выбранный способ оплаты (управляет модификатором `button_alt-active`).  
+`set address(value: string)` - заполняет поле адреса.
+
+События:  
+При нажатии на кнопки оплаты вызывает внутренний метод и эмитит событие `order:payment-change`.  
+При вводе адреса эмитит событие `order:address-change`.  
+При отправке формы эмитит событие `order:submit`.
+
+##### Класс ContactsFormView
+
+Представление формы с контактными данными.
+
+Поля класса:  
+`protected emailInput: HTMLInputElement` - поле ввода email.  
+`protected phoneInput: HTMLInputElement` - поле ввода телефона.
+
+Сеттеры:  
+`set email(value: string)` - заполняет поле email.  
+`set phone(value: string)` - заполняет поле телефона.
+
+События:  
+При вводе email эмитит событие `contacts:email-change`.  
+При вводе телефона эмитит событие `contacts:phone-change`.  
+При отправке формы эмитит событие `contacts:submit`.
+
+#### Класс SuccessView
+
+Представление содержимого модального окна успешного оформления заказа (шаблон `#success`).
+
+Поля класса:  
+`protected descriptionElement: HTMLElement` - текст с суммой списанных «синапсов`.  
+`protected closeButton: HTMLButtonElement` - кнопка закрытия окна.
+
+Сеттеры:  
+`set total(value: number)` - устанавливает текст `"Списано N синапсов"` в зависимости от суммы заказа.
+
+События:  
+При клике по кнопке закрытия эмитит событие `success:close`.
+
+#### Класс GalleryView
+
+Представление галереи карточек товаров.
+
+Сеттеры:  
+`set items(value: HTMLElement[])` - заменяет содержимое галереи переданным массивом карточек, полностью перерисовывая список товаров.
