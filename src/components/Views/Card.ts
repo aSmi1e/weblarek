@@ -56,7 +56,6 @@ export abstract class Card<T extends ICardBase> extends Component<T> {
     }
 }
 
-// Карточка товара в каталоге (шаблон #card-catalog)
 export class CardCatalog extends Card<ICardCatalog> {
     protected imageElement: HTMLImageElement;
     protected categoryElement: HTMLElement;
@@ -88,7 +87,6 @@ export class CardCatalog extends Card<ICardCatalog> {
     }
 }
 
-// Карточка товара в превью (шаблон #card-preview)
 export class CardPreview extends Card<ICardPreview> {
     protected imageElement: HTMLImageElement;
     protected categoryElement: HTMLElement;
@@ -144,7 +142,6 @@ export class CardPreview extends Card<ICardPreview> {
     }
 }
 
-// Карточка товара в корзине (шаблон #card-basket)
 export class CardBasket extends Card<ICardBasket> {
     protected indexElement: HTMLElement;
     protected deleteButton: HTMLButtonElement;

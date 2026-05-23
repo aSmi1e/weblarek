@@ -18,16 +18,13 @@ import type { OrderRequest, Product, ProductListResponse } from './types';
 
 const events = new EventEmitter();
 
-// Модели
 const catalogModel = new Catalog(events);
 const cartModel = new Cart(events);
 const customerModel = new Customer(events);
 
-// Сервисы
 const api = new Api(API_URL);
 const loader = new CatalogLoader(api);
 
-// Представления
 const header = new Header(events, ensureElement<HTMLElement>('.header'));
 const gallery = new GalleryView(ensureElement<HTMLElement>('.gallery'));
 const modal = new Modal(events, ensureElement<HTMLElement>('#modal-container'));
@@ -36,7 +33,6 @@ const orderFormView = new OrderFormView(events, cloneTemplate<HTMLFormElement>('
 const contactsFormView = new ContactsFormView(events, cloneTemplate<HTMLFormElement>('#contacts'));
 const successView = new SuccessView(events, cloneTemplate<HTMLDivElement>('#success'));
 
-// Рендеринг каталога
 const renderCatalog = () => {
     const products = catalogModel.getProducts();
     const items = products.map((product) => {
@@ -61,7 +57,6 @@ const renderCatalog = () => {
     gallery.render({ items });
 };
 
-// Рендеринг корзины
 const renderBasket = () => {
     const itemsInCart = cartModel.getSelectedProducts();
     const basketItems = itemsInCart.map((product, index) => {
@@ -92,7 +87,6 @@ const renderBasket = () => {
     modal.open(basketElement);
 };
 
-// Рендеринг превью товара
 const renderPreview = (product: Product) => {
     const inCart = cartModel.checkProductInCart(product.id);
 
@@ -119,12 +113,10 @@ const renderPreview = (product: Product) => {
     modal.open(cardElement);
 };
 
-// Обновление счетчика корзины
 const updateHeaderCounter = () => {
     header.render({ counter: cartModel.calculateTotalProductAmount() });
 };
 
-// Обработчики событий
 events.on('cart:change', () => {
     updateHeaderCounter();
 });
@@ -273,7 +265,6 @@ events.on('success:close', () => {
     modal.close();
 });
 
-// Запуск приложения
 const runApp = async () => {
     header.render({ counter: 0 });
     try {

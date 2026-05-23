@@ -3,7 +3,7 @@ import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
 
 interface IHeader {
-    counter: number; // Было: Number, исправлено: number
+    counter: number;
 }
 
 export class Header extends Component<IHeader> {
