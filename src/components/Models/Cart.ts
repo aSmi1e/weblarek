@@ -4,14 +4,14 @@ import { IEvents } from '../base/Events';
 export class Cart implements ICart {
     private selectedProducts: Product[] = [];
 
-    constructor(private readonly events?: IEvents) {}
+    constructor(private readonly events: IEvents) {}
 
     getSelectedProducts(): Product[] {
         return this.selectedProducts;
     }
 
     private emitChange() {
-        this.events?.emit('cart:change');
+        this.events.emit('cart:change');
     }
 
     addProduct(product: Product): void {
@@ -21,28 +21,31 @@ export class Cart implements ICart {
 
     deleteProduct(product: Product): boolean {
         const lengthBefore = this.selectedProducts.length;
-        this.selectedProducts = this.selectedProducts.filter((item) => item.id !== product.id);
+
+        this.selectedProducts = this.selectedProducts.filter(
+            (item) => item.id !== product.id
+        );
+
         const changed = this.selectedProducts.length < lengthBefore;
+
         if (changed) {
             this.emitChange();
         }
+
         return changed;
     }
 
     clearCart(): void {
-        if (this.selectedProducts.length === 0) {
-            return;
-        }
         this.selectedProducts = [];
         this.emitChange();
     }
 
     calculateTotalPrice(): number {
-        const sumTotal = this.selectedProducts.reduce(
-            (accumulator, currentValue) => accumulator + (currentValue.price || 0),
-            0,
+        return this.selectedProducts.reduce(
+            (accumulator, currentValue) =>
+                accumulator + (currentValue.price || 0),
+            0
         );
-        return sumTotal;
     }
 
     calculateTotalProductAmount(): number {

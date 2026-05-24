@@ -2,11 +2,7 @@ import { ensureElement } from '../../utils/utils';
 import { Component } from '../base/Component';
 import { IEvents } from '../base/Events';
 
-interface IModal {
-    content: HTMLElement | null;
-}
-
-export class Modal extends Component<IModal> {
+export class Modal extends Component<{ content: HTMLElement | null }> {
     protected contentContainer: HTMLElement;
     protected closeButton: HTMLButtonElement;
 
@@ -33,12 +29,20 @@ export class Modal extends Component<IModal> {
     open(content: HTMLElement) {
         this.content = content;
         this.container.classList.add('modal_active');
-        this.events.emit('modal:open', {});
     }
 
     close() {
         this.container.classList.remove('modal_active');
-        this.contentContainer.replaceChildren();
-        this.events.emit('modal:close', {});
+        this.content = null;
+    }
+
+    // Добавляем метод для проверки открытости
+    isOpen(): boolean {
+        return this.container.classList.contains('modal_active');
+    }
+
+    // Добавляем геттер для доступа к container
+    get element(): HTMLElement {
+        return this.container;
     }
 }

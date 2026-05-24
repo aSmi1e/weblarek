@@ -79,9 +79,9 @@ export interface ICart {
 }
 
 export interface ICustomer {
-    updateData(
-        key: CustomerDataKey,
-        value: CustomerData[CustomerDataKey]
+    updateData<K extends CustomerDataKey>(
+        key: K,
+        value: CustomerData[K]
     ): boolean;
 
     getData(): CustomerData;

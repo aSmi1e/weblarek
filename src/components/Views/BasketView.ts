@@ -2,7 +2,7 @@ import { ensureElement } from '../../utils/utils';
 import { Component } from '../base/Component';
 import { IEvents } from '../base/Events';
 
-interface IBasketView {
+export interface IBasketView {
     items: HTMLElement[];
     total: number;
     empty: boolean;
@@ -15,12 +15,24 @@ export class BasketView extends Component<IBasketView> {
 
     constructor(protected events: IEvents, container: HTMLElement) {
         super(container);
-        this.listElement = ensureElement<HTMLElement>('.basket__list', this.container);
-        this.totalElement = ensureElement<HTMLElement>('.basket__price', this.container);
-        this.submitButton = ensureElement<HTMLButtonElement>('.basket__button', this.container);
+
+        this.listElement = ensureElement<HTMLElement>(
+            '.basket__list',
+            this.container
+        );
+
+        this.totalElement = ensureElement<HTMLElement>(
+            '.basket__price',
+            this.container
+        );
+
+        this.submitButton = ensureElement<HTMLButtonElement>(
+            '.basket__button',
+            this.container
+        );
 
         this.submitButton.addEventListener('click', () => {
-            this.events.emit('basket:order', {});
+            this.events.emit('basket:order');
         });
     }
 
@@ -36,10 +48,7 @@ export class BasketView extends Component<IBasketView> {
         this.submitButton.disabled = value;
     }
 
-    render(data: IBasketView): HTMLElement {
-        this.items = data.items;
-        this.total = data.total;
-        this.empty = data.empty;
+    get element(): HTMLElement {
         return this.container;
     }
 }

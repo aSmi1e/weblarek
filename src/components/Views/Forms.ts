@@ -2,7 +2,7 @@ import { ensureElement } from '../../utils/utils';
 import { Component } from '../base/Component';
 import { IEvents } from '../base/Events';
 
-interface IFormView {
+export interface IFormView {
     valid: boolean;
     errors: string;
 }
@@ -14,9 +14,18 @@ export abstract class FormView<T extends IFormView> extends Component<T> {
 
     constructor(protected events: IEvents, container: HTMLFormElement) {
         super(container);
+
         this.formElement = container;
-        this.submitButton = ensureElement<HTMLButtonElement>('button[type="submit"]', this.container);
-        this.errorsElement = ensureElement<HTMLElement>('.form__errors', this.container);
+
+        this.submitButton = ensureElement<HTMLButtonElement>(
+            'button[type="submit"]',
+            this.container
+        );
+
+        this.errorsElement = ensureElement<HTMLElement>(
+            '.form__errors',
+            this.container
+        );
 
         this.formElement.addEventListener('submit', (event: SubmitEvent) => {
             event.preventDefault();
@@ -33,99 +42,8 @@ export abstract class FormView<T extends IFormView> extends Component<T> {
     }
 
     protected abstract onSubmit(): void;
-}
 
-interface IOrderFormView extends IFormView {
-    payment: string | null;
-    address: string;
-}
-
-export class OrderFormView extends FormView<IOrderFormView> {
-    protected buttonCard: HTMLButtonElement;
-    protected buttonCash: HTMLButtonElement;
-    protected addressInput: HTMLInputElement;
-
-    constructor(events: IEvents, container: HTMLFormElement) {
-        super(events, container);
-        this.buttonCard = ensureElement<HTMLButtonElement>('button[name="card"]', this.container);
-        this.buttonCash = ensureElement<HTMLButtonElement>('button[name="cash"]', this.container);
-        this.addressInput = ensureElement<HTMLInputElement>('input[name="address"]', this.container);
-
-        this.buttonCard.addEventListener('click', () => {
-            this.events.emit('order:payment-change', { payment: 'card' });
-        });
-
-        this.buttonCash.addEventListener('click', () => {
-            this.events.emit('order:payment-change', { payment: 'cash' });
-        });
-
-        this.addressInput.addEventListener('input', () => {
-            this.events.emit('order:address-change', { address: this.addressInput.value });
-        });
-    }
-
-    set payment(value: string | null) {
-        this.buttonCard.classList.toggle('button_alt-active', value === 'card');
-        this.buttonCash.classList.toggle('button_alt-active', value === 'cash');
-    }
-
-    set address(value: string) {
-        this.addressInput.value = value;
-    }
-
-    protected onSubmit(): void {
-        this.events.emit('order:submit', {});
-    }
-
-    render(data: IOrderFormView): HTMLElement {
-        this.valid = data.valid;
-        this.errors = data.errors;
-        this.payment = data.payment;
-        this.address = data.address;
-        return this.container;
-    }
-}
-
-interface IContactsFormView extends IFormView {
-    email: string;
-    phone: string;
-}
-
-export class ContactsFormView extends FormView<IContactsFormView> {
-    protected emailInput: HTMLInputElement;
-    protected phoneInput: HTMLInputElement;
-
-    constructor(events: IEvents, container: HTMLFormElement) {
-        super(events, container);
-        this.emailInput = ensureElement<HTMLInputElement>('input[name="email"]', this.container);
-        this.phoneInput = ensureElement<HTMLInputElement>('input[name="phone"]', this.container);
-
-        this.emailInput.addEventListener('input', () => {
-            this.events.emit('contacts:email-change', { email: this.emailInput.value });
-        });
-
-        this.phoneInput.addEventListener('input', () => {
-            this.events.emit('contacts:phone-change', { phone: this.phoneInput.value });
-        });
-    }
-
-    set email(value: string) {
-        this.emailInput.value = value;
-    }
-
-    set phone(value: string) {
-        this.phoneInput.value = value;
-    }
-
-    protected onSubmit(): void {
-        this.events.emit('contacts:submit', {});
-    }
-
-    render(data: IContactsFormView): HTMLElement {
-        this.valid = data.valid;
-        this.errors = data.errors;
-        this.email = data.email;
-        this.phone = data.phone;
+    get element(): HTMLElement {
         return this.container;
     }
 }

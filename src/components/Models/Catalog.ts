@@ -5,15 +5,13 @@ export class Catalog implements ICatalog {
     private productList: Product[] = [];
     private selectedProductId: string | null = null;
 
-    constructor(private readonly events?: IEvents) {
-
+    constructor(private readonly events: IEvents) { // Убрали опциональность
+        this.events = events;
     }
 
     saveProducts(products: Product[]): void {
         this.productList = products;
-        this.events?.emit('catalog:change', {
-            products: this.productList,
-        });
+        this.events.emit('catalog:change'); // Не передаем данные в событии
     }
 
     getProducts(): Product[] {
@@ -26,9 +24,7 @@ export class Catalog implements ICatalog {
 
     saveSelectedProductId(id: string): void {
         this.selectedProductId = id;
-        this.events?.emit('catalog:selected-change', {
-            selectedProductId: this.selectedProductId,
-        });
+        this.events.emit('catalog:selected-change'); // Не передаем данные в событии
     }
 
     getSelectedProductId(): string | null {

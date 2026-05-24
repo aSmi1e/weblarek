@@ -1,62 +1,66 @@
-import {CustomerData, CustomerDataKey, ICustomer, ResultValidationType} from "../../types";
+import {
+    CustomerData,
+    CustomerDataKey,
+    ICustomer,
+    ResultValidationType,
+} from '../../types';
 import { IEvents } from '../base/Events';
 
 export class Customer implements ICustomer {
+    private data: CustomerData = {
+        payment: null,
+        address: '',
+        phone: '',
+        email: '',
+    };
 
-    private payment: CustomerData['payment'] = null;
-    private address: CustomerData['address'] = '';
-    private phone: CustomerData['phone'] = '';
-    private email: CustomerData['email'] = '';
+    constructor(private readonly events: IEvents) {}
 
-    constructor(private readonly events?: IEvents) {}
-
-    private emitChange() {
-        this.events?.emit('customer:change', {
-            data: this.getData(),
-        });
-    }
-
-    updateData(
-        key: CustomerDataKey,
-        value: CustomerData[CustomerDataKey]
+    updateData<K extends CustomerDataKey>(
+        key: K,
+        value: CustomerData[K]
     ): boolean {
-        (this[key] as CustomerData[typeof key]) = value;
-        this.emitChange();
+        this.data[key] = value;
+
+        this.events.emit('customer:change');
+
         return true;
     }
 
     getData(): CustomerData {
-        return {
-            payment: this.payment,
-            address: this.address,
-            phone: this.phone,
-            email: this.email
-        };
+        return this.data;
     }
 
     clearData(): void {
-        this.payment = null;
-        this.address = '';
-        this.phone = '';
-        this.email = '';
-        this.emitChange();
+        this.data = {
+            payment: null,
+            address: '',
+            phone: '',
+            email: '',
+        };
+
+        this.events.emit('customer:change');
     }
 
     validateData(): ResultValidationType {
-        const res: ResultValidationType = {};
+        const errors: ResultValidationType = {};
 
-        if (!this.payment) {
-            res.payment = 'Укажите тип оплаты';
+        if (!this.data.payment) {
+            errors.payment = 'Необходимо выбрать способ оплаты';
         }
-        if (!this.address.trim()) {
-            res.address = 'Укажите адрес';
+
+        if (!this.data.address) {
+            errors.address = 'Необходимо указать адрес';
         }
-        if (!this.phone.trim()) {
-            res.phone = 'Укажите телефон';
+
+        if (!this.data.email) {
+            errors.email = 'Необходимо указать email';
         }
-        if (!this.email.trim()) {
-            res.email = 'Укажите электронную почту';
+
+        if (!this.data.phone) {
+            errors.phone = 'Необходимо указать телефон';
         }
-        return res;
+
+        return errors;
     }
 }

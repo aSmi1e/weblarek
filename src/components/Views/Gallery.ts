@@ -13,8 +13,11 @@ export class GalleryView extends Component<IGalleryView> {
         this.container.replaceChildren(...value);
     }
 
-    render(data: IGalleryView): HTMLElement {
-        this.items = data.items;
+    showError(message: string): void {
+        this.container.innerHTML = `<div class="error">${message}</div>`;
+    }
+
+    get element(): HTMLElement {
         return this.container;
     }
 }
