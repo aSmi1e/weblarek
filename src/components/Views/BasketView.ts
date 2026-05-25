@@ -47,8 +47,4 @@ export class BasketView extends Component<IBasketView> {
     set empty(value: boolean) {
         this.submitButton.disabled = value;
     }
-
-    get element(): HTMLElement {
-        return this.container;
-    }
 }

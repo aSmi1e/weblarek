@@ -35,14 +35,4 @@ export class Modal extends Component<{ content: HTMLElement | null }> {
         this.container.classList.remove('modal_active');
         this.content = null;
     }
-
-    // Добавляем метод для проверки открытости
-    isOpen(): boolean {
-        return this.container.classList.contains('modal_active');
-    }
-
-    // Добавляем геттер для доступа к container
-    get element(): HTMLElement {
-        return this.container;
-    }
 }

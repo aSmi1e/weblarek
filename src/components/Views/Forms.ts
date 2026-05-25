@@ -42,8 +42,4 @@ export abstract class FormView<T extends IFormView> extends Component<T> {
     }
 
     protected abstract onSubmit(): void;
-
-    get element(): HTMLElement {
-        return this.container;
-    }
 }

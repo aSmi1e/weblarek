@@ -23,9 +23,4 @@ export class Header extends Component<IHeader> {
     set counter(value: number) {
         this.counterElement.textContent = String(value);
     }
-
-    render(data: IHeader): HTMLElement {
-        this.counter = data.counter; // Теперь ошибки не будет
-        return this.container;
-    }
 }

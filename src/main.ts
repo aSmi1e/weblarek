@@ -71,6 +71,14 @@ const successView = new SuccessView(
     cloneTemplate<HTMLDivElement>('#success')
 );
 
+
+const cardPreview = new CardPreview(
+    cloneTemplate<HTMLDivElement>('#card-preview'),
+    () => {
+        events.emit('preview:toggle-cart');
+    }
+);
+
 const renderCatalog = () => {
     const products = catalogModel.getProducts();
 
@@ -78,7 +86,7 @@ const renderCatalog = () => {
         const card = new CardCatalog(
             cloneTemplate<HTMLButtonElement>('#card-catalog'),
             () => {
-                catalogModel.saveSelectedProductId(product.id);
+                events.emit('card:select', { id: product.id });
             }
         );
 
@@ -122,38 +130,21 @@ const renderBasket = () => {
 
 const renderPreview = () => {
     const productId = catalogModel.getSelectedProductId();
-
     if (!productId) return;
 
     const product = catalogModel.getProductById(productId);
-
     if (!product) return;
 
     const inCart = cartModel.checkProductInCart(product.id);
 
-    const card = new CardPreview(
-        cloneTemplate<HTMLDivElement>('#card-preview'),
-        () => {
-            if (cartModel.checkProductInCart(product.id)) {
-                cartModel.deleteProduct(product);
-            } else {
-                cartModel.addProduct(product);
-            }
-
-            modal.close();
-        }
-    );
-
-    const cardElement = card.render({
+    const cardElement = cardPreview.render({
         id: product.id,
         title: product.title,
         price: product.price,
         category: product.category as keyof typeof import('./utils/constants').categoryMap,
         image: product.image,
         description: product.description,
-        buttonText: inCart
-            ? 'Убрать из корзины'
-            : 'В корзину',
+        buttonText: inCart ? 'Убрать из корзины' : 'В корзину',
         buttonDisabled: product.price === null,
     });
 
@@ -165,6 +156,26 @@ const updateHeaderCounter = () => {
         counter: cartModel.calculateTotalProductAmount(),
     });
 };
+
+events.on('card:select', ({ id }: { id: string }) => {
+    catalogModel.saveSelectedProductId(id);
+});
+
+events.on('preview:toggle-cart', () => {
+    const productId = catalogModel.getSelectedProductId();
+    if (!productId) return;
+
+    const product = catalogModel.getProductById(productId);
+    if (!product) return;
+
+    if (cartModel.checkProductInCart(product.id)) {
+        cartModel.deleteProduct(product);
+    } else {
+        cartModel.addProduct(product);
+    }
+
+    modal.close();
+});
 
 events.on('catalog:change', () => {
     renderCatalog();
@@ -181,7 +192,6 @@ events.on('cart:change', () => {
 
 events.on('customer:change', () => {
     const data = customerModel.getData();
-
     const errors = customerModel.validateData();
 
     orderFormView.render({
@@ -200,44 +210,32 @@ events.on('customer:change', () => {
 });
 
 events.on('basket:open', () => {
-    modal.open(basketView.element);
+    modal.open(basketView.render());
 });
 
 events.on('basket:order', () => {
-    modal.open(orderFormView.element);
+    modal.open(orderFormView.render());
 });
 
-events.on(
-    'order:payment-change',
-    ({ payment }: { payment: 'card' | 'cash' }) => {
-        customerModel.updateData('payment', payment);
-    }
-);
+events.on('order:payment-change', ({ payment }: { payment: 'card' | 'cash' }) => {
+    customerModel.updateData('payment', payment);
+});
 
-events.on(
-    'order:address-change',
-    ({ address }: { address: string }) => {
-        customerModel.updateData('address', address);
-    }
-);
+events.on('order:address-change', ({ address }: { address: string }) => {
+    customerModel.updateData('address', address);
+});
 
 events.on('order:submit', () => {
-    modal.open(contactsFormView.element);
+    modal.open(contactsFormView.render());
 });
 
-events.on(
-    'contacts:email-change',
-    ({ email }: { email: string }) => {
-        customerModel.updateData('email', email);
-    }
-);
+events.on('contacts:email-change', ({ email }: { email: string }) => {
+    customerModel.updateData('email', email);
+});
 
-events.on(
-    'contacts:phone-change',
-    ({ phone }: { phone: string }) => {
-        customerModel.updateData('phone', phone);
-    }
-);
+events.on('contacts:phone-change', ({ phone }: { phone: string }) => {
+    customerModel.updateData('phone', phone);
+});
 
 events.on('contacts:submit', async () => {
     const data = customerModel.getData();
@@ -250,9 +248,7 @@ events.on('contacts:submit', async () => {
         phone: data.phone,
         address: data.address,
         total: cartModel.calculateTotalPrice(),
-        items: cartModel
-            .getSelectedProducts()
-            .map((product) => product.id),
+        items: cartModel.getSelectedProducts().map(p => p.id),
     };
 
     try {
@@ -262,7 +258,7 @@ events.on('contacts:submit', async () => {
             total: response.total,
         });
 
-        modal.open(successView.element);
+        modal.open(successView.render());
 
         cartModel.clearCart();
         customerModel.clearData();
@@ -282,15 +278,10 @@ const runApp = async () => {
     header.render({ counter: 0 });
 
     try {
-        const data: ProductListResponse =
-            await loader.fetchProductList();
-
+        const data: ProductListResponse = await loader.fetchProductList();
         catalogModel.saveProducts(data.items);
     } catch (error) {
-        console.error(
-            'Не удалось загрузить каталог',
-            error
-        );
+        console.error('Не удалось загрузить каталог', error);
     }
 };
 

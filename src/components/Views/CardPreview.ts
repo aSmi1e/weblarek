@@ -97,8 +97,4 @@ export class CardPreview extends Component<ICardPreview> {
     set buttonDisabled(value: boolean) {
         this.buttonElement.disabled = value;
     }
-
-    get element(): HTMLElement {
-        return this.container;
-    }
 }

@@ -70,8 +70,4 @@ export class CardCatalog extends Component<ICardCatalog> {
             this.titleElement.textContent || ''
         );
     }
-
-    get element(): HTMLElement {
-        return this.container;
-    }
 }

@@ -16,8 +16,4 @@ export class GalleryView extends Component<IGalleryView> {
     showError(message: string): void {
         this.container.innerHTML = `<div class="error">${message}</div>`;
     }
-
-    get element(): HTMLElement {
-        return this.container;
-    }
 }
